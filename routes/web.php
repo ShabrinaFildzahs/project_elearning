@@ -15,6 +15,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', Admin\UserController::class);
         Route::resource('classes', Admin\ClassController::class);
+        Route::post('classes/store-map', [Admin\ClassController::class, 'storeMap'])->name('classes.storeMap');
         Route::resource('schedules', Admin\ScheduleController::class);
     });
 

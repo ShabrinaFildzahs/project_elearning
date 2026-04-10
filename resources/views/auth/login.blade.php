@@ -36,7 +36,7 @@
             </div>
         @endif
 
-        <form action="/login" method="POST" class="space-y-5">
+        <form action="{{ route('login') }}" method="POST" class="space-y-5">
             @csrf
 
             {{-- Email --}}
