@@ -8,6 +8,10 @@ class Assignment extends Model
 {
     protected $fillable = ['academic_map_id', 'title', 'description', 'deadline', 'type'];
 
+    protected $casts = [
+        'deadline' => 'datetime',
+    ];
+
     public function academicMap() { return $this->belongsTo(AcademicMap::class); }
     public function submissions() { return $this->hasMany(Submission::class); }
 }
