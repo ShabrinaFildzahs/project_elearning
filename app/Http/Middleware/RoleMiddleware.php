@@ -13,7 +13,8 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!$request->user() || $request->user()->role !== $role) {
+        // Mengecek apakah user terautentikasi melalui guard yang sesuai dengan role
+        if (!auth()->guard($role)->check()) {
             abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk halaman ini.');
         }
 

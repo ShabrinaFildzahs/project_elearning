@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
-use App\Models\Assignment;
-use App\Models\Submission;
+use App\Models\Tugas;
+use App\Models\Pengumpulan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -13,47 +13,66 @@ class AssignmentController extends Controller
 {
     public function index()
     {
-        $assignments = Assignment::with(['academicMap.class', 'academicMap.subject'])
-            ->withCount('submissions')
-            ->orderBy('deadline')
+        $user = Auth::guard('siswa')->user();
+
+        $tugas = Tugas::with(['pemetaanAkademik.mataPelajaran'])
+            ->whereHas('pemetaanAkademik', function($q) use ($user) {
+                $q->where('id_kelas', $user->id_kelas);
+            })
+            ->withCount(['pengumpulan' => function($q) use ($user) {
+                $q->where('id_siswa', $user->id);
+            }])
+            ->orderBy('tenggat_waktu')
             ->paginate(12);
 
-        $mySubmissions = Submission::where('student_id', Auth::id())
-            ->pluck('assignment_id')
+        $idTugasSudahDikirim = Pengumpulan::where('id_siswa', $user->id)
+            ->pluck('id_tugas')
             ->toArray();
 
-        return view('siswa.assignments', compact('assignments', 'mySubmissions'));
+        return view('siswa.assignments', [
+            'data_tugas' => $tugas, 
+            'idTugasSudahDikirim' => $idTugasSudahDikirim
+        ]);
     }
 
-    public function show(Assignment $assignment)
+    public function show($id)
     {
-        $assignment->load(['academicMap.class', 'academicMap.subject', 'academicMap.teacher']);
-        $submission = Submission::where('assignment_id', $assignment->id)
-            ->where('student_id', Auth::id())
+        $tugas = Tugas::with(['pemetaanAkademik.kelas', 'pemetaanAkademik.mataPelajaran', 'pemetaanAkademik.guru'])
+            ->findOrFail($id);
+            
+        $pengumpulan = Pengumpulan::where('id_tugas', $id)
+            ->where('id_siswa', Auth::guard('siswa')->id())
             ->first();
-        return view('siswa.assignments_show', compact('assignment', 'submission'));
+
+        return view('siswa.assignments_show', [
+            'tugas' => $tugas, 
+            'pengumpulan' => $pengumpulan
+        ]);
     }
 
-    public function submit(Request $request, Assignment $assignment)
+    public function submit(Request $request, $id)
     {
         $request->validate(['file' => 'required|file|max:20480']);
+        $siswa_id = Auth::guard('siswa')->id();
 
-        $existing = Submission::where('assignment_id', $assignment->id)
-            ->where('student_id', Auth::id())->first();
+        $existing = Pengumpulan::where('id_tugas', $id)
+            ->where('id_siswa', $siswa_id)->first();
 
         if ($existing) {
-            Storage::disk('public')->delete($existing->file_path);
+            if ($existing->path_file) {
+                Storage::disk('public')->delete($existing->path_file);
+            }
             $existing->update([
-                'file_path' => $request->file('file')->store('submissions', 'public'),
-                'status' => 'pending',
-                'grade' => null,
+                'path_file' => $request->file('file')->store('pengumpulan', 'public'),
+                'status' => 'dikirim',
+                'nilai' => null,
             ]);
         } else {
-            Submission::create([
-                'assignment_id' => $assignment->id,
-                'student_id'   => Auth::id(),
-                'file_path'    => $request->file('file')->store('submissions', 'public'),
-                'status'       => 'pending',
+            Pengumpulan::create([
+                'id_tugas' => $id,
+                'id_siswa' => $siswa_id,
+                'path_file' => $request->file('file')->store('pengumpulan', 'public'),
+                'status' => 'dikirim',
             ]);
         }
 

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Models\Assignment;
-use App\Models\Submission;
-use App\Models\AcademicMap;
+use App\Models\Tugas;
+use App\Models\Pengumpulan;
+use App\Models\PemetaanAkademik;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,73 +13,112 @@ class AssignmentController extends Controller
 {
     private function getTeacherMaps()
     {
-        return AcademicMap::with(['class', 'subject'])->where('teacher_id', Auth::id())->get();
+        return PemetaanAkademik::with(['kelas', 'mataPelajaran'])
+            ->where('id_guru', Auth::guard('guru')->id())->get();
     }
 
     public function index()
     {
-        $assignments = Assignment::with(['academicMap.class', 'academicMap.subject'])
-            ->whereHas('academicMap', fn($q) => $q->where('teacher_id', Auth::id()))
-            ->withCount('submissions')->latest()->paginate(12);
-        return view('guru.assignments', compact('assignments'));
+        $tugas = Tugas::with(['pemetaanAkademik.kelas', 'pemetaanAkademik.mataPelajaran'])
+            ->whereHas('pemetaanAkademik', fn($q) => $q->where('id_guru', Auth::guard('guru')->id()))
+            ->withCount('pengumpulan')->latest()->paginate(12);
+            
+        return view('guru.assignments', [
+            'data_tugas' => $tugas
+        ]);
     }
 
     public function create()
     {
-        $academicMaps = $this->getTeacherMaps();
-        return view('guru.assignments_form', ['assignment' => null, 'academicMaps' => $academicMaps]);
+        $pemetaanAkademik = $this->getTeacherMaps();
+        return view('guru.assignments_form', [
+            'tugas' => null, 
+            'data_pemetaan' => $pemetaanAkademik
+        ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'academic_map_id' => 'required|exists:academic_maps,id',
-            'title'           => 'required|string|max:255',
-            'description'     => 'required|string',
-            'deadline'        => 'required|date',
-            'type'            => 'required|in:tugas,kuis',
+            'id_pemetaan_akademik' => 'required|exists:pemetaan_akademik,id',
+            'judul'           => 'required|string|max:255',
+            'deskripsi'     => 'required|string',
+            'tenggat_waktu'        => 'required|date',
+            'tipe'            => 'required|in:tugas,kuis',
         ]);
 
-        Assignment::create($request->only('academic_map_id', 'title', 'description', 'deadline', 'type'));
+        Tugas::create([
+            'id_pemetaan_akademik' => $request->id_pemetaan_akademik,
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+            'tenggat_waktu' => $request->tenggat_waktu,
+            'tipe' => $request->tipe,
+        ]);
+
         return redirect()->route('guru.assignments.index')->with('success', 'Tugas berhasil dibuat!');
     }
 
-    public function edit(Assignment $assignment)
+    public function edit($id)
     {
-        $academicMaps = $this->getTeacherMaps();
-        return view('guru.assignments_form', compact('assignment', 'academicMaps'));
+        $tugas = Tugas::findOrFail($id);
+        $pemetaanAkademik = $this->getTeacherMaps();
+        return view('guru.assignments_form', [
+            'tugas' => $tugas, 
+            'data_pemetaan' => $pemetaanAkademik
+        ]);
     }
 
-    public function update(Request $request, Assignment $assignment)
+    public function update(Request $request, $id)
     {
+        $tugas = Tugas::findOrFail($id);
+
         $request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'required|string',
-            'deadline'    => 'required|date',
-            'type'        => 'required|in:tugas,kuis',
+            'id_pemetaan_akademik' => 'required|exists:pemetaan_akademik,id',
+            'judul'       => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'tenggat_waktu'    => 'required|date',
+            'tipe'        => 'required|in:tugas,kuis',
         ]);
 
-        $assignment->update($request->only('title', 'description', 'deadline', 'type', 'academic_map_id'));
+        $tugas->update([
+            'id_pemetaan_akademik' => $request->id_pemetaan_akademik,
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+            'tenggat_waktu' => $request->tenggat_waktu,
+            'tipe' => $request->tipe,
+        ]);
+
         return redirect()->route('guru.assignments.index')->with('success', 'Tugas berhasil diperbarui!');
     }
 
-    public function destroy(Assignment $assignment)
+    public function destroy($id)
     {
-        $assignment->delete();
+        Tugas::findOrFail($id)->delete();
         return back()->with('success', 'Tugas berhasil dihapus!');
     }
 
-    public function submissions(Assignment $assignment)
+    public function submissions($id)
     {
-        $submissions = Submission::with('student')
-            ->where('assignment_id', $assignment->id)->get();
-        return view('guru.submissions', compact('assignment', 'submissions'));
+        $tugas = Tugas::findOrFail($id);
+        $pengumpulan = Pengumpulan::with('siswa')
+            ->where('id_tugas', $id)->get();
+            
+        return view('guru.submissions', [
+            'tugas' => $tugas, 
+            'data_pengumpulan' => $pengumpulan
+        ]);
     }
 
-    public function grade(Request $request, Submission $submission)
+    public function grade(Request $request, $id)
     {
-        $request->validate(['grade' => 'required|integer|min:0|max:100']);
-        $submission->update(['grade' => $request->grade, 'status' => 'graded']);
+        $pengumpulan = Pengumpulan::findOrFail($id);
+        $request->validate(['nilai' => 'required|integer|min:0|max:100']);
+        
+        $pengumpulan->update([
+            'nilai' => $request->nilai, 
+            'status' => 'dinilai'
+        ]);
+
         return back()->with('success', 'Nilai berhasil disimpan!');
     }
 }

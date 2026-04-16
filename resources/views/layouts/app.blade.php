@@ -93,7 +93,25 @@
 </head>
 <body class="bg-slate-50 flex h-screen overflow-hidden">
 
-    @php $role = auth()->user()->role ?? 'siswa'; $user = auth()->user(); @endphp
+    @php
+        $role = 'siswa';
+        $user = null;
+        $displayName = 'User';
+
+        if (Auth::guard('admin')->check()) {
+            $role = 'admin';
+            $user = Auth::guard('admin')->user();
+            $displayName = $user->username;
+        } elseif (Auth::guard('guru')->check()) {
+            $role = 'guru';
+            $user = Auth::guard('guru')->user();
+            $displayName = $user->nama;
+        } elseif (Auth::guard('siswa')->check()) {
+            $role = 'siswa';
+            $user = Auth::guard('siswa')->user();
+            $displayName = $user->nama_lengkap;
+        }
+    @endphp
 
     {{-- ===== SIDEBAR ===== --}}
     <aside class="sidebar w-64 flex-shrink-0 flex flex-col h-full text-white">
@@ -116,10 +134,10 @@
         <div class="p-4 mx-3 mt-4 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-3">
             <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0
                 @if($role=='admin') bg-blue-600 @elseif($role=='guru') bg-emerald-600 @else bg-purple-600 @endif">
-                {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
+                {{ strtoupper(substr($displayName ?? 'U', 0, 1)) }}
             </div>
             <div class="overflow-hidden">
-                <p class="text-sm font-semibold text-white truncate">{{ $user->name ?? 'User' }}</p>
+                <p class="text-sm font-semibold text-white truncate">{{ $displayName ?? 'User' }}</p>
                 <p class="text-[10px] text-slate-400 capitalize">{{ $role }}</p>
             </div>
         </div>
@@ -198,7 +216,7 @@
 
         {{-- Logout --}}
         <div class="p-3 border-t border-white/5">
-            <form action="/logout" method="POST">
+            <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit" class="w-full nav-item hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -226,10 +244,10 @@
                     </div>
                 @endif
                 <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-full pl-3 pr-1 py-1">
-                    <span class="text-sm font-medium text-slate-700">{{ $user->name ?? 'User' }}</span>
+                    <span class="text-sm font-medium text-slate-700">{{ $displayName ?? 'User' }}</span>
                     <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-white
                         @if($role=='admin') bg-blue-600 @elseif($role=='guru') bg-emerald-600 @else bg-purple-600 @endif">
-                        {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
+                        {{ strtoupper(substr($displayName ?? 'U', 0, 1)) }}
                     </div>
                 </div>
             </div>

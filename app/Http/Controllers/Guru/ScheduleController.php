@@ -3,20 +3,25 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Models\Schedule;
+use App\Models\Jadwal;
 use Illuminate\Support\Facades\Auth;
 
 class ScheduleController extends Controller
 {
     public function index()
     {
-        $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        $schedules = Schedule::with(['academicMap.class', 'academicMap.subject'])
-            ->whereHas('academicMap', fn($q) => $q->where('teacher_id', Auth::id()))
-            ->orderByRaw("FIELD(day,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
-            ->orderBy('start_time')
+        $hari_list = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        
+        $jadwal = Jadwal::with(['pemetaanAkademik.kelas', 'pemetaanAkademik.mataPelajaran'])
+            ->whereHas('pemetaanAkademik', fn($q) => $q->where('id_guru', Auth::guard('guru')->id()))
+            ->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
+            ->orderBy('jam_mulai')
             ->get()
-            ->groupBy('day');
-        return view('guru.schedules', compact('schedules', 'days'));
+            ->groupBy('hari');
+
+        return view('guru.schedules', [
+            'data_jadwal' => $jadwal,
+            'hari_list' => $hari_list
+        ]);
     }
 }

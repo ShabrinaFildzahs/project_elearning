@@ -6,8 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Kelas extends Model
 {
-    protected $table = 'classes';
-    protected $fillable = ['name'];
+    protected $table = 'kelas';
+    protected $fillable = ['nama'];
 
-    public function academicMaps() { return $this->hasMany(AcademicMap::class, 'class_id'); }
+    public function pemetaanAkademik()
+    {
+        return $this->hasMany(PemetaanAkademik::class, 'id_kelas');
+    }
+
+    public function siswa()
+    {
+        return $this->hasMany(Siswa::class, 'id_kelas');
+    }
 }

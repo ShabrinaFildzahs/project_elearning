@@ -21,10 +21,10 @@
 
     {{-- Stats Row --}}
     @php
-        $total = $assignments->total();
-        $submittedCount = count($mySubmissions ?? []);
+        $total = $data_tugas->total();
+        $submittedCount = count($idTugasSudahDikirim ?? []);
         $pendingCount = $total - $submittedCount;
-        $quizCount = $assignments->where('type', 'kuis')->count();
+        $quizCount = $data_tugas->where('tipe', 'kuis')->count();
     @endphp
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-shadow group">
@@ -46,7 +46,7 @@
                 <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Selesai</span>
             </div>
             <div class="text-3xl font-black text-emerald-600">{{ $submittedCount }}</div>
-            <p class="text-sm text-slate-500 mt-1 font-medium">Sudah Dikumpulkan</p>
+            <p class="text-sm text-slate-500 mt-1 font-medium">Sudah Dikirim</p>
         </div>
 
         <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-shadow group">
@@ -56,7 +56,7 @@
                 </div>
                 <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Pending</span>
             </div>
-            <div class="text-3xl font-black text-orange-500">{{ $pendingCount }}</div>
+            <div class="text-3xl font-black text-orange-500">{{ max(0, $pendingCount) }}</div>
             <p class="text-sm text-slate-500 mt-1 font-medium">Belum Dikerjakan</p>
         </div>
 
@@ -86,7 +86,7 @@
             </div>
         </div>
 
-        @if($assignments->isEmpty())
+        @if($data_tugas->isEmpty())
             <div class="bg-white rounded-3xl border border-slate-100 p-20 text-center shadow-sm">
                 <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
                     <span class="text-5xl">🎉</span>
@@ -96,18 +96,18 @@
             </div>
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                @foreach($assignments as $assignment)
+                @foreach($data_tugas as $tugas)
                 @php
-                    $isSubmitted = in_array($assignment->id, $mySubmissions ?? []);
-                    $isOverdue   = $assignment->deadline < now();
-                    $daysLeft    = now()->diffInDays($assignment->deadline, false);
-                    $accentColor = $assignment->type == 'kuis' ? 'purple' : 'blue';
+                    $isSubmitted = in_array($tugas->id, $idTugasSudahDikirim ?? []);
+                    $isOverdue   = \Carbon\Carbon::parse($tugas->tenggat_waktu)->isPast();
+                    $daysLeft    = now()->diffInDays($tugas->tenggat_waktu, false);
+                    $accentColor = $tugas->tipe == 'kuis' ? 'purple' : 'blue';
                 @endphp
                 <div class="group bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
                     {{-- Card Header --}}
                     <div class="p-6 pb-0 flex items-start justify-between">
                         <div class="w-12 h-12 rounded-2xl bg-{{ $accentColor }}-50 flex items-center justify-center text-{{ $accentColor }}-600 group-hover:bg-{{ $accentColor }}-600 group-hover:text-white transition-colors duration-500">
-                            @if($assignment->type == 'kuis')
+                            @if($tugas->tipe == 'kuis')
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             @else
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -119,31 +119,27 @@
                             @else bg-{{ $accentColor }}-100 text-{{ $accentColor }}-600 @endif">
                             @if($isSubmitted) Terkirim
                             @elseif($isOverdue) Terlewat
-                            @else Active @endif
+                            @else Aktif @endif
                         </span>
                     </div>
 
                     {{-- Card Content --}}
                     <div class="p-6 pt-4 flex-1">
-                        <h4 class="text-lg font-black text-slate-800 leading-tight group-hover:text-{{ $accentColor }}-600 transition-colors duration-300">{{ $assignment->title }}</h4>
-                        <p class="text-sm text-slate-500 mt-2 font-medium line-clamp-2">{{ $assignment->description ?? 'Tidak ada deskripsi tugas.' }}</p>
+                        <h4 class="text-lg font-black text-slate-800 leading-tight group-hover:text-{{ $accentColor }}-600 transition-colors duration-300">{{ $tugas->judul }}</h4>
+                        <p class="text-sm text-slate-500 mt-2 font-medium line-clamp-2">{{ $tugas->deskripsi ?? 'Tidak ada deskripsi tugas.' }}</p>
 
                         <div class="mt-6 flex flex-wrap gap-2">
                             <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-xl text-[11px] font-bold text-slate-600 border border-slate-100">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                                {{ $assignment->academicMap->subject->name ?? '-' }}
-                            </div>
-                            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-xl text-[11px] font-bold text-slate-600 border border-slate-100">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                                {{ $assignment->academicMap->class->name ?? '-' }}
+                                {{ $tugas->pemetaanAkademik->mataPelajaran->nama ?? '-' }}
                             </div>
                         </div>
 
                         <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
                             <div class="min-w-0">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Deadline</p>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tenggat Waktu</p>
                                 <p class="text-sm font-bold @if($isOverdue && !$isSubmitted) text-red-500 @else text-slate-700 @endif mt-0.5">
-                                    {{ $assignment->deadline->translatedFormat('d F Y, H:i') }}
+                                    {{ \Carbon\Carbon::parse($tugas->tenggat_waktu)->translatedFormat('d F Y, H:i') }}
                                 </p>
                             </div>
                             @if($daysLeft >= 0 && $daysLeft <= 2 && !$isSubmitted)
@@ -157,7 +153,7 @@
                     {{-- Card Footer Actions --}}
                     <div class="p-4 bg-slate-50/50 border-t border-slate-100 mt-auto">
                         @if($isSubmitted)
-                            <a href="{{ route('siswa.assignments.show', $assignment) }}"
+                            <a href="{{ route('siswa.assignments.show', $tugas->id) }}"
                                class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-white border border-slate-200 text-xs font-black text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 duration-200">
                                 <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
@@ -170,7 +166,7 @@
                                 DEADLINE TERLEWAT
                             </div>
                         @else
-                            <a href="{{ route('siswa.assignments.show', $assignment) }}"
+                            <a href="{{ route('siswa.assignments.show', $tugas->id) }}"
                                class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-{{ $accentColor }}-600 text-xs font-black text-white hover:bg-{{ $accentColor }}-700 shadow-lg shadow-{{ $accentColor }}-200 transition-all active:scale-95 duration-200">
                                 KERJAKAN SEKARANG
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7-7 7"/></svg>
@@ -181,9 +177,9 @@
                 @endforeach
             </div>
 
-            @if($assignments->hasPages())
+            @if($data_tugas->hasPages())
                 <div class="mt-12 flex justify-center">
-                    {{ $assignments->links() }}
+                    {{ $data_tugas->links() }}
                 </div>
             @endif
         @endif

@@ -32,21 +32,21 @@
         {{-- Error Message --}}
         @if ($errors->any())
             <div class="mb-5 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                <strong>Gagal Masuk:</strong> {{ $errors->first('email') }}
+                <strong>Gagal Masuk:</strong> {{ $errors->first('login') }}
             </div>
         @endif
 
         <form action="{{ route('login') }}" method="POST" class="space-y-5">
             @csrf
 
-            {{-- Email --}}
+            {{-- Login Identity (Email or Username) --}}
             <div>
-                <label class="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Email</label>
+                <label class="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">Username atau Email</label>
                 <input
-                    type="email"
-                    name="email"
-                    value="{{ old('email') }}"
-                    placeholder="nama@smkbinaa.sch.id"
+                    type="text"
+                    name="login"
+                    value="{{ old('login') }}"
+                    placeholder="Username untuk Admin / Email untuk Guru & Siswa"
                     class="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                     required autofocus
                 >
@@ -75,17 +75,17 @@
             <p class="text-xs text-slate-500 text-center mb-3 font-semibold uppercase tracking-widest">Akun Percobaan</p>
             <div class="grid grid-cols-3 gap-2 text-center">
                 <div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 cursor-pointer hover:bg-blue-500/20 transition"
-                     onclick="document.querySelector('[name=email]').value='admin@test.com'; document.querySelector('[name=password]').value='password'">
+                     onclick="document.querySelector('[name=login]').value='admin'; document.querySelector('[name=password]').value='password'">
                     <p class="text-xs font-bold text-blue-400">Admin</p>
                     <p class="text-[10px] text-slate-500 mt-0.5">Klik untuk isi</p>
                 </div>
                 <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/20 transition"
-                     onclick="document.querySelector('[name=email]').value='guru@test.com'; document.querySelector('[name=password]').value='password'">
+                     onclick="document.querySelector('[name=login]').value='guru@test.com'; document.querySelector('[name=password]').value='password'">
                     <p class="text-xs font-bold text-emerald-400">Guru</p>
                     <p class="text-[10px] text-slate-500 mt-0.5">Klik untuk isi</p>
                 </div>
                 <div class="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 cursor-pointer hover:bg-purple-500/20 transition"
-                     onclick="document.querySelector('[name=email]').value='siswa@test.com'; document.querySelector('[name=password]').value='password'">
+                     onclick="document.querySelector('[name=login]').value='siswa@test.com'; document.querySelector('[name=password]').value='password'">
                     <p class="text-xs font-bold text-purple-400">Siswa</p>
                     <p class="text-[10px] text-slate-500 mt-0.5">Klik untuk isi</p>
                 </div>

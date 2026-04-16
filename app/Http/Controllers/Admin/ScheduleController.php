@@ -3,51 +3,69 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Schedule;
-use App\Models\AcademicMap;
+use App\Models\Jadwal;
+use App\Models\PemetaanAkademik;
 use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
 {
     public function index()
     {
-        $schedules = Schedule::with(['academicMap.class', 'academicMap.subject', 'academicMap.teacher'])
-            ->orderByRaw("FIELD(day,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
-            ->orderBy('start_time')
+        $jadwal = Jadwal::with(['pemetaanAkademik.kelas', 'pemetaanAkademik.mataPelajaran', 'pemetaanAkademik.guru'])
+            ->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
+            ->orderBy('jam_mulai')
             ->get();
-        $academicMaps = AcademicMap::with(['class', 'subject', 'teacher'])->get();
-        return view('admin.schedules', compact('schedules', 'academicMaps'));
+        
+        $pemetaanAkademik = PemetaanAkademik::with(['kelas', 'mataPelajaran', 'guru'])->get();
+        
+        return view('admin.schedules', [
+            'data_jadwal' => $jadwal,
+            'data_pemetaan' => $pemetaanAkademik
+        ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'academic_map_id' => 'required|exists:academic_maps,id',
-            'day' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
-            'start_time' => 'required',
-            'end_time' => 'required|after:start_time',
+            'id_pemetaan_akademik' => 'required|exists:pemetaan_akademik,id',
+            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required|after:jam_mulai',
         ]);
 
-        Schedule::create($request->only('academic_map_id', 'day', 'start_time', 'end_time'));
+        Jadwal::create([
+            'id_pemetaan_akademik' => $request->id_pemetaan_akademik,
+            'hari' => $request->hari,
+            'jam_mulai' => $request->jam_mulai,
+            'jam_selesai' => $request->jam_selesai,
+        ]);
+
         return back()->with('success', 'Jadwal berhasil ditambahkan!');
     }
 
-    public function update(Request $request, Schedule $schedule)
+    public function update(Request $request, $id)
     {
         $request->validate([
-            'academic_map_id' => 'required|exists:academic_maps,id',
-            'day' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
-            'start_time' => 'required',
-            'end_time' => 'required',
+            'id_pemetaan_akademik' => 'required|exists:pemetaan_akademik,id',
+            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
         ]);
 
-        $schedule->update($request->only('academic_map_id', 'day', 'start_time', 'end_time'));
+        $jadwal = Jadwal::findOrFail($id);
+        $jadwal->update([
+            'id_pemetaan_akademik' => $request->id_pemetaan_akademik,
+            'hari' => $request->hari,
+            'jam_mulai' => $request->jam_mulai,
+            'jam_selesai' => $request->jam_selesai,
+        ]);
+
         return back()->with('success', 'Jadwal berhasil diperbarui!');
     }
 
-    public function destroy(Schedule $schedule)
+    public function destroy($id)
     {
-        $schedule->delete();
+        Jadwal::findOrFail($id)->delete();
         return back()->with('success', 'Jadwal berhasil dihapus!');
     }
 }

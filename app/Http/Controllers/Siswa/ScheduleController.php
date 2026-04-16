@@ -3,21 +3,28 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
-use App\Models\Schedule;
+use App\Models\Jadwal;
 use Illuminate\Support\Facades\Auth;
 
 class ScheduleController extends Controller
 {
     public function index()
     {
-        $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        // Students need to be linked to a class — for now, show all schedules or link via a student_class table
-        // For simplicity: show schedules — you can extend to per-class later
-        $schedules = Schedule::with(['academicMap.class', 'academicMap.subject', 'academicMap.teacher'])
-            ->orderByRaw("FIELD(day,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
-            ->orderBy('start_time')
+        $hari_list = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        $user = Auth::guard('siswa')->user();
+
+        $jadwal = Jadwal::with(['pemetaanAkademik.mataPelajaran', 'pemetaanAkademik.guru'])
+            ->whereHas('pemetaanAkademik', function($q) use ($user) {
+                $q->where('id_kelas', $user->id_kelas);
+            })
+            ->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
+            ->orderBy('jam_mulai')
             ->get()
-            ->groupBy('day');
-        return view('siswa.schedules', compact('schedules', 'days'));
+            ->groupBy('hari');
+
+        return view('siswa.schedules', [
+            'data_jadwal' => $jadwal,
+            'hari_list' => $hari_list
+        ]);
     }
 }

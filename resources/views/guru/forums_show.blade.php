@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $forum->title)
+@section('title', $forum->judul)
 @section('page_title', 'Forum Diskusi')
 
 @section('content')
@@ -25,60 +25,66 @@
 <div class="max-w-3xl space-y-5">
 
     {{-- ===== ORIGINAL POST ===== --}}
+    @php
+        $namaPembuatOriginal = $forum->pembuat->nama ?? $forum->pembuat->nama_lengkap ?? 'Anonim';
+    @endphp
     <div class="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden">
         {{-- Thread Header --}}
         <div class="px-6 py-4 bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100 flex items-center gap-3">
             <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center font-bold text-white text-sm shrink-0">
-                {{ strtoupper(substr($forum->user->name ?? 'U', 0, 1)) }}
+                {{ strtoupper(substr($namaPembuatOriginal, 0, 1)) }}
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-slate-800">{{ $forum->user->name ?? 'Anonim' }}</p>
+                <p class="text-sm font-bold text-slate-800">{{ $namaPembuatOriginal }}</p>
                 <div class="flex items-center gap-2 flex-wrap mt-0.5">
                     <span class="text-[11px] text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                        {{ $forum->academicMap->subject->name ?? '-' }}
+                        {{ $forum->pemetaanAkademik->mataPelajaran->nama ?? '-' }}
                     </span>
                     <span class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                        Kelas {{ $forum->academicMap->class->name ?? '-' }}
+                        Kelas {{ $forum->pemetaanAkademik->kelas->nama ?? '-' }}
                     </span>
                     <span class="text-[11px] text-slate-400">· {{ $forum->created_at->format('d M Y, H:i') }}</span>
                 </div>
             </div>
             <span class="text-xs text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100 shrink-0">
-                {{ $forum->comments->count() }} balasan
+                {{ $forum->komentar->count() }} balasan
             </span>
         </div>
 
         {{-- Thread Body --}}
         <div class="px-6 py-5">
-            <h1 class="text-lg font-bold text-slate-800 mb-3 leading-snug">{{ $forum->title }}</h1>
-            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $forum->content }}</p>
+            <h1 class="text-lg font-bold text-slate-800 mb-3 leading-snug">{{ $forum->judul }}</h1>
+            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $forum->konten }}</p>
         </div>
     </div>
 
     {{-- ===== REPLIES ===== --}}
-    @if($forum->comments->count() > 0)
+    @if($forum->komentar->count() > 0)
     <div>
         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-1">
-            {{ $forum->comments->count() }} Balasan
+            {{ $forum->komentar->count() }} Balasan
         </h3>
         <div class="space-y-3">
-            @foreach($forum->comments as $comment)
-            @php $isGuru = $comment->user->role === 'guru'; @endphp
+            @foreach($forum->komentar as $komentar)
+            @php 
+                $isGuru = $komentar->tipe_pembuat === \App\Models\Guru::class;
+                $namaPembuatKomentar = $komentar->pembuat->nama ?? $komentar->pembuat->nama_lengkap ?? 'Anonim';
+            @endphp
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-start gap-3
                         {{ $isGuru ? 'border-l-[3px] border-l-emerald-400' : '' }}">
                 <div class="w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs text-white
                              {{ $isGuru ? 'bg-gradient-to-br from-emerald-400 to-emerald-600' : 'bg-gradient-to-br from-slate-400 to-slate-500' }}">
-                    {{ strtoupper(substr($comment->user->name ?? 'U', 0, 1)) }}
+                    {{ strtoupper(substr($namaPembuatKomentar, 0, 1)) }}
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <span class="text-sm font-bold text-slate-800">{{ $comment->user->name ?? 'Anonim' }}</span>
+                        <span class="text-sm font-bold text-slate-800">{{ $namaPembuatKomentar }}</span>
                         @if($isGuru)
                         <span class="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full uppercase tracking-wide">Guru</span>
                         @endif
-                        <span class="text-[11px] text-slate-400 ml-auto">{{ $comment->created_at->diffForHumans() }}</span>
+                        <span class="text-[11px] text-slate-400 ml-auto">{{ $komentar->created_at->diffForHumans() }}</span>
                     </div>
-                    <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $comment->content }}</p>
+                    <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{{ $komentar->konten }}</p>
                 </div>
             </div>
             @endforeach
@@ -104,9 +110,9 @@
             <span class="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full ml-auto">Sebagai Guru</span>
         </div>
         <div class="px-6 py-5">
-            <form action="{{ route('guru.forums.comments.store', $forum) }}" method="POST" class="space-y-4">
+            <form action="{{ route('guru.forums.comments.store', $forum->id) }}" method="POST" class="space-y-4">
                 @csrf
-                <textarea name="content" rows="4" required
+                <textarea name="konten" rows="4" required
                           placeholder="Tulis balasan atau penjelasan untuk diskusi ini..."
                           class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400 transition resize-none placeholder:text-slate-300 leading-relaxed"></textarea>
                 <div class="flex justify-end">

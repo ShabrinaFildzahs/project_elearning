@@ -27,18 +27,18 @@
             </div>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-slate-800">Daftar Kelas</p>
-                <p class="text-[11px] text-slate-400 truncate">{{ $classes->count() }} kelas terdaftar</p>
+                <p class="text-[11px] text-slate-400 truncate">{{ $data_kelas->count() }} kelas terdaftar</p>
             </div>
-            <span class="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full shrink-0">{{ $classes->count() }}</span>
+            <span class="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full shrink-0">{{ $data_kelas->count() }}</span>
         </div>
 
         {{-- Add Form --}}
         <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/60">
             <form action="{{ route('admin.classes.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="type" value="class">
+                <input type="hidden" name="tipe" value="kelas">
                 <div class="flex gap-2">
-                    <input type="text" name="name" placeholder="Nama kelas baru..." required
+                    <input type="text" name="nama" placeholder="Nama kelas baru..." required
                         class="flex-1 min-w-0 px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 transition placeholder:text-slate-300">
                     <button type="submit"
                         class="shrink-0 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition flex items-center gap-1">
@@ -51,18 +51,19 @@
 
         {{-- List --}}
         <div class="overflow-y-auto flex-1" style="max-height:340px;">
-            @forelse($classes as $kelas)
+            @forelse($data_kelas as $kelas)
             <div class="group flex items-center justify-between px-4 py-3 border-b border-slate-50 hover:bg-blue-50/40 transition last:border-b-0">
                 <div class="flex items-center gap-2.5 min-w-0">
                     <div class="w-7 h-7 rounded-lg bg-blue-100 group-hover:bg-blue-200 transition flex items-center justify-center shrink-0">
-                        <span class="text-[9px] font-bold text-blue-700">{{ strtoupper(substr($kelas->name, 0, 2)) }}</span>
+                        <span class="text-[9px] font-bold text-blue-700">{{ strtoupper(substr($kelas->nama, 0, 2)) }}</span>
                     </div>
-                    <span class="text-sm font-semibold text-slate-700 truncate">{{ $kelas->name }}</span>
+                    <span class="text-sm font-semibold text-slate-700 truncate">{{ $kelas->nama }}</span>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                    <span class="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">{{ $kelas->academic_maps_count }} mapel</span>
-                    <form action="{{ route('admin.classes.destroy', $kelas->id) }}?type=class" method="POST" onsubmit="return confirm('Hapus kelas {{ $kelas->name }}?')">
+                    <span class="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">{{ $kelas->pemetaan_akademik_count }} mapel</span>
+                    <form action="{{ route('admin.classes.destroy', $kelas->id) }}" method="POST" onsubmit="return confirm('Hapus kelas {{ $kelas->nama }}?')">
                         @csrf @method('DELETE')
+                        <input type="hidden" name="tipe" value="kelas">
                         <button type="submit" class="w-6 h-6 flex items-center justify-center rounded-lg text-slate-200 hover:text-red-500 hover:bg-red-50 transition opacity-0 group-hover:opacity-100">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
@@ -89,18 +90,18 @@
             </div>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-slate-800">Mata Pelajaran</p>
-                <p class="text-[11px] text-slate-400 truncate">{{ $subjects->count() }} mapel terdaftar</p>
+                <p class="text-[11px] text-slate-400 truncate">{{ $data_mapel->count() }} mapel terdaftar</p>
             </div>
-            <span class="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">{{ $subjects->count() }}</span>
+            <span class="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full shrink-0">{{ $data_mapel->count() }}</span>
         </div>
 
         {{-- Add Form --}}
         <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/60">
             <form action="{{ route('admin.classes.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="type" value="subject">
+                <input type="hidden" name="tipe" value="mapel">
                 <div class="flex gap-2">
-                    <input type="text" name="name" placeholder="Nama mata pelajaran..." required
+                    <input type="text" name="nama" placeholder="Nama mata pelajaran..." required
                         class="flex-1 min-w-0 px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400 transition placeholder:text-slate-300">
                     <button type="submit"
                         class="shrink-0 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition flex items-center gap-1">
@@ -113,18 +114,19 @@
 
         {{-- List --}}
         <div class="overflow-y-auto flex-1" style="max-height:340px;">
-            @forelse($subjects as $subject)
+            @forelse($data_mapel as $mapel)
             <div class="group flex items-center justify-between px-4 py-3 border-b border-slate-50 hover:bg-emerald-50/40 transition last:border-b-0">
                 <div class="flex items-center gap-2.5 min-w-0">
                     <div class="w-7 h-7 rounded-lg bg-emerald-100 group-hover:bg-emerald-200 transition flex items-center justify-center shrink-0">
                         <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13"/></svg>
                     </div>
-                    <span class="text-sm font-semibold text-slate-700 truncate">{{ $subject->name }}</span>
+                    <span class="text-sm font-semibold text-slate-700 truncate">{{ $mapel->nama }}</span>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                    <span class="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">{{ $subject->academic_maps_count }} kelas</span>
-                    <form action="{{ route('admin.classes.destroy', $subject->id) }}?type=subject" method="POST" onsubmit="return confirm('Hapus mapel {{ $subject->name }}?')">
+                    <span class="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">{{ $mapel->pemetaan_akademik_count }} kelas</span>
+                    <form action="{{ route('admin.classes.destroy', $mapel->id) }}" method="POST" onsubmit="return confirm('Hapus mapel {{ $mapel->nama }}?')">
                         @csrf @method('DELETE')
+                        <input type="hidden" name="tipe" value="mapel">
                         <button type="submit" class="w-6 h-6 flex items-center justify-center rounded-lg text-slate-200 hover:text-red-500 hover:bg-red-50 transition opacity-0 group-hover:opacity-100">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
@@ -153,35 +155,35 @@
                 <p class="text-sm font-bold text-slate-800">Pemetaan Guru</p>
                 <p class="text-[11px] text-slate-400 truncate">Assign guru ke kelas & mapel</p>
             </div>
-            <span class="text-xs font-bold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full shrink-0">{{ $academicMaps->count() }}</span>
+            <span class="text-xs font-bold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full shrink-0">{{ $data_pemetaan->count() }}</span>
         </div>
 
         {{-- Form Pemetaan --}}
         <div class="px-4 py-4 border-b border-slate-100 bg-slate-50/60 space-y-2.5">
-            <form action="{{ route('admin.classes.storeMap') ?? '#' }}" method="POST" class="space-y-2.5">
+            <form action="{{ route('admin.classes.storeMap') }}" method="POST" class="space-y-2.5">
                 @csrf
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Kelas</label>
-                    <select name="class_id" required
+                    <select name="id_kelas" required
                         class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition text-slate-700 cursor-pointer">
                         <option value="">-- Pilih Kelas --</option>
-                        @foreach($classes as $kelas)<option value="{{ $kelas->id }}">{{ $kelas->name }}</option>@endforeach
+                        @foreach($data_kelas as $kelas)<option value="{{ $kelas->id }}">{{ $kelas->nama }}</option>@endforeach
                     </select>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Mata Pelajaran</label>
-                    <select name="subject_id" required
+                    <select name="id_mata_pelajaran" required
                         class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition text-slate-700 cursor-pointer">
                         <option value="">-- Pilih Mata Pelajaran --</option>
-                        @foreach($subjects as $subject)<option value="{{ $subject->id }}">{{ $subject->name }}</option>@endforeach
+                        @foreach($data_mapel as $mapel)<option value="{{ $mapel->id }}">{{ $mapel->nama }}</option>@endforeach
                     </select>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Guru Pengampu</label>
-                    <select name="teacher_id" required
+                    <select name="id_guru" required
                         class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-400 transition text-slate-700 cursor-pointer">
                         <option value="">-- Pilih Guru --</option>
-                        @foreach($teachers as $teacher)<option value="{{ $teacher->id }}">{{ $teacher->name }}</option>@endforeach
+                        @foreach($data_guru as $guru)<option value="{{ $guru->id }}">{{ $guru->nama }}</option>@endforeach
                     </select>
                 </div>
                 <button type="submit"
@@ -194,19 +196,27 @@
 
         {{-- Mapping List --}}
         <div class="overflow-y-auto flex-1" style="max-height:220px;">
-            @forelse($academicMaps as $map)
-            <div class="group flex items-start gap-2.5 px-4 py-3 border-b border-slate-50 hover:bg-violet-50/40 transition last:border-b-0">
-                <div class="w-6 h-6 rounded-md bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <svg class="w-3 h-3 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            @forelse($data_pemetaan as $map)
+            <div class="group flex items-start justify-between gap-2.5 px-4 py-3 border-b border-slate-50 hover:bg-violet-50/40 transition last:border-b-0">
+                <div class="flex items-start gap-2.5 min-w-0">
+                    <div class="w-6 h-6 rounded-md bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg class="w-3 h-3 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-slate-700 truncate">{{ $map->mataPelajaran->nama ?? '-' }}</p>
+                        <p class="text-[11px] text-slate-400 truncate mt-0.5">
+                            <span class="font-medium text-slate-500">{{ $map->kelas->nama ?? '-' }}</span>
+                            <span class="mx-1">·</span>
+                            <span class="text-violet-500 font-medium">{{ $map->guru->nama ?? '-' }}</span>
+                        </p>
+                    </div>
                 </div>
-                <div class="min-w-0">
-                    <p class="text-sm font-semibold text-slate-700 truncate">{{ $map->subject->name ?? '-' }}</p>
-                    <p class="text-[11px] text-slate-400 truncate mt-0.5">
-                        <span class="font-medium text-slate-500">{{ $map->class->name ?? '-' }}</span>
-                        <span class="mx-1">·</span>
-                        <span class="text-violet-500 font-medium">{{ $map->teacher->name ?? '-' }}</span>
-                    </p>
-                </div>
+                <form action="{{ route('admin.classes.destroyMap', $map->id) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="w-6 h-6 flex items-center justify-center rounded-lg text-slate-200 hover:text-red-500 hover:bg-red-50 transition opacity-0 group-hover:opacity-100">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                </form>
             </div>
             @empty
             <div class="flex flex-col items-center justify-center py-8 text-center">

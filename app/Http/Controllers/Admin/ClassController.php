@@ -4,52 +4,58 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
-use App\Models\Subject;
-use App\Models\AcademicMap;
-use App\Models\User;
+use App\Models\MataPelajaran;
+use App\Models\PemetaanAkademik;
+use App\Models\Guru;
 use Illuminate\Http\Request;
 
 class ClassController extends Controller
 {
     public function index()
     {
-        $classes = Kelas::withCount('academicMaps')->orderBy('name')->get();
-        $subjects = Subject::withCount('academicMaps')->orderBy('name')->get();
-        $academicMaps = AcademicMap::with(['class', 'subject', 'teacher'])->get();
-        $teachers = User::where('role', 'guru')->orderBy('name')->get();
-        return view('admin.classes', compact('classes', 'subjects', 'academicMaps', 'teachers'));
+        $kelas = Kelas::withCount('pemetaanAkademik')->orderBy('nama')->get();
+        $mataPelajaran = MataPelajaran::withCount('pemetaanAkademik')->orderBy('nama')->get();
+        $pemetaanAkademik = PemetaanAkademik::with(['kelas', 'mataPelajaran', 'guru'])->get();
+        $guru = Guru::orderBy('nama')->get();
+        
+        return view('admin.classes', [
+            'data_kelas' => $kelas,
+            'data_mapel' => $mataPelajaran,
+            'data_pemetaan' => $pemetaanAkademik,
+            'data_guru' => $guru
+        ]);
     }
 
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255']);
+        $request->validate(['nama' => 'required|string|max:255']);
 
-        if ($request->type === 'subject') {
-            Subject::create(['name' => $request->name]);
+        if ($request->tipe === 'mapel') {
+            MataPelajaran::create(['nama' => $request->nama]);
             return back()->with('success', 'Mata pelajaran berhasil ditambahkan!');
         }
 
-        Kelas::create(['name' => $request->name]);
+        Kelas::create(['nama' => $request->nama]);
         return back()->with('success', 'Kelas berhasil ditambahkan!');
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate(['name' => 'required|string|max:255']);
+        $request->validate(['nama' => 'required|string|max:255']);
 
-        if ($request->type === 'subject') {
-            Subject::findOrFail($id)->update(['name' => $request->name]);
+        if ($request->tipe === 'mapel') {
+            MataPelajaran::findOrFail($id)->update(['nama' => $request->nama]);
             return back()->with('success', 'Mata pelajaran berhasil diperbarui!');
         }
 
-        Kelas::findOrFail($id)->update(['name' => $request->name]);
+        Kelas::findOrFail($id)->update(['nama' => $request->nama]);
         return back()->with('success', 'Kelas berhasil diperbarui!');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        if (request()->type === 'subject') {
-            Subject::findOrFail($id)->delete();
+        if ($request->tipe === 'mapel') {
+            MataPelajaran::findOrFail($id)->delete();
             return back()->with('success', 'Mata pelajaran dihapus!');
         }
 
@@ -57,21 +63,27 @@ class ClassController extends Controller
         return back()->with('success', 'Kelas dihapus!');
     }
 
-    // Store Academic Map (link guru-mapel-kelas)
+    // Plotting Guru ke Kelas & Mapel
     public function storeMap(Request $request)
     {
         $request->validate([
-            'class_id' => 'required|exists:classes,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'teacher_id' => 'required|exists:users,id',
+            'id_kelas' => 'required|exists:kelas,id',
+            'id_mata_pelajaran' => 'required|exists:mata_pelajaran,id',
+            'id_guru' => 'required|exists:guru,id',
         ]);
 
-        AcademicMap::firstOrCreate([
-            'class_id' => $request->class_id,
-            'subject_id' => $request->subject_id,
-            'teacher_id' => $request->teacher_id,
+        PemetaanAkademik::firstOrCreate([
+            'id_kelas' => $request->id_kelas,
+            'id_mata_pelajaran' => $request->id_mata_pelajaran,
+            'id_guru' => $request->id_guru,
         ]);
 
         return back()->with('success', 'Pemetaan guru berhasil disimpan!');
+    }
+
+    public function destroyMap($id)
+    {
+        PemetaanAkademik::findOrFail($id)->delete();
+        return back()->with('success', 'Pemetaan akademik dihapus!');
     }
 }

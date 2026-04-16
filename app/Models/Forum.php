@@ -6,9 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Forum extends Model
 {
-    protected $fillable = ['academic_map_id', 'user_id', 'title', 'content'];
+    protected $table = 'forum';
+    protected $fillable = ['id_pemetaan_akademik', 'id_pembuat', 'tipe_pembuat', 'judul', 'konten'];
 
-    public function academicMap() { return $this->belongsTo(AcademicMap::class); }
-    public function user() { return $this->belongsTo(User::class); }
-    public function comments() { return $this->hasMany(ForumComment::class); }
+    public function pemetaanAkademik()
+    {
+        return $this->belongsTo(PemetaanAkademik::class, 'id_pemetaan_akademik');
+    }
+
+    /**
+     * Get the creator of the forum (Guru or Siswa).
+     */
+    public function pembuat()
+    {
+        return $this->morphTo(null, 'tipe_pembuat', 'id_pembuat');
+    }
+
+    public function komentar()
+    {
+        return $this->hasMany(KomentarForum::class, 'id_forum');
+    }
 }

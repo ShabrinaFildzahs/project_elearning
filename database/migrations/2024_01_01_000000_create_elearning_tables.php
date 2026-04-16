@@ -8,104 +8,148 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        // 1. Administrator
+        Schema::create('administrator', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('username')->unique();
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'guru', 'siswa'])->default('siswa');
-            $table->rememberToken();
             $table->timestamps();
         });
 
-        Schema::create('classes', function (Blueprint $table) {
+        // 2. Guru
+        Schema::create('guru', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // e.g., X RPL 1
+            $table->string('nama');
+            $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->string('tempat_lahir');
+            $table->date('tanggal_lahir');
+            $table->text('alamat');
+            $table->string('no_hp');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('pendidikan_terakhir');
             $table->timestamps();
         });
 
-        Schema::create('subjects', function (Blueprint $table) {
+        // 3. Kelas
+        Schema::create('kelas', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // e.g., Pemrograman Web
+            $table->string('nama');
             $table->timestamps();
         });
 
-        Schema::create('academic_maps', function (Blueprint $table) {
+        // 4. Siswa
+        Schema::create('siswa', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
-            $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
-            $table->foreignId('teacher_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('id_kelas')->constrained('kelas')->onDelete('cascade');
+            $table->string('nama_lengkap');
+            $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->string('tempat_lahir');
+            $table->date('tanggal_lahir');
+            $table->text('alamat');
+            $table->string('no_hp');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('nisn')->unique();
+            $table->year('tahun_masuk');
             $table->timestamps();
         });
 
-        Schema::create('schedules', function (Blueprint $table) {
+        // 5. Mata Pelajaran
+        Schema::create('mata_pelajaran', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('academic_map_id')->constrained('academic_maps')->onDelete('cascade');
-            $table->string('day'); // Senin, Selasa, etc.
-            $table->time('start_time');
-            $table->time('end_time');
+            $table->string('nama');
             $table->timestamps();
         });
 
-        Schema::create('materials', function (Blueprint $table) {
+        // 6. Pemetaan Akademik (Plotting Guru ke Kelas & Mapel)
+        Schema::create('pemetaan_akademik', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('academic_map_id')->constrained('academic_maps')->onDelete('cascade');
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('file_path');
+            $table->foreignId('id_kelas')->constrained('kelas')->onDelete('cascade');
+            $table->foreignId('id_mata_pelajaran')->constrained('mata_pelajaran')->onDelete('cascade');
+            $table->foreignId('id_guru')->constrained('guru')->onDelete('cascade');
             $table->timestamps();
         });
 
-        Schema::create('assignments', function (Blueprint $table) {
+        // 7. Jadwal Pelajaran
+        Schema::create('jadwal', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('academic_map_id')->constrained('academic_maps')->onDelete('cascade');
-            $table->string('title');
-            $table->text('description');
-            $table->dateTime('deadline');
-            $table->enum('type', ['tugas', 'kuis'])->default('tugas');
+            $table->foreignId('id_pemetaan_akademik')->constrained('pemetaan_akademik')->onDelete('cascade');
+            $table->string('hari'); // Senin, Selasa, dst.
+            $table->time('jam_mulai');
+            $table->time('jam_selesai');
             $table->timestamps();
         });
 
-        Schema::create('submissions', function (Blueprint $table) {
+        // 8. Materi
+        Schema::create('materi', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('assignment_id')->constrained('assignments')->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->string('file_path');
-            $table->enum('status', ['pending', 'graded'])->default('pending');
-            $table->integer('grade')->nullable();
+            $table->foreignId('id_pemetaan_akademik')->constrained('pemetaan_akademik')->onDelete('cascade');
+            $table->string('judul');
+            $table->text('deskripsi')->nullable();
+            $table->string('path_file');
             $table->timestamps();
         });
 
-        Schema::create('forums', function (Blueprint $table) {
+        // 9. Tugas
+        Schema::create('tugas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('academic_map_id')->constrained('academic_maps')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('title');
-            $table->text('content');
+            $table->foreignId('id_pemetaan_akademik')->constrained('pemetaan_akademik')->onDelete('cascade');
+            $table->string('judul');
+            $table->text('deskripsi');
+            $table->dateTime('tenggat_waktu');
+            $table->enum('tipe', ['tugas', 'kuis'])->default('tugas');
             $table->timestamps();
         });
 
-        Schema::create('forum_comments', function (Blueprint $table) {
+        // 10. Pengumpulan Tugas
+        Schema::create('pengumpulan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('forum_id')->constrained('forums')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->text('content');
+            $table->foreignId('id_tugas')->constrained('tugas')->onDelete('cascade');
+            $table->foreignId('id_siswa')->constrained('siswa')->onDelete('cascade');
+            $table->string('path_file');
+            $table->enum('status', ['tertunda', 'dinilai'])->default('tertunda');
+            $table->integer('nilai')->nullable();
+            $table->timestamps();
+        });
+
+        // 11. Forum Diskusi
+        Schema::create('forum', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_pemetaan_akademik')->constrained('pemetaan_akademik')->onDelete('cascade');
+            // Polymorphic relation untuk pencipta forum (Induk: Guru atau Siswa)
+            $table->unsignedBigInteger('id_pembuat');
+            $table->string('tipe_pembuat'); // App\Models\Guru atau App\Models\Siswa
+            $table->string('judul');
+            $table->text('konten');
+            $table->timestamps();
+        });
+
+        // 12. Komentar Forum
+        Schema::create('komentar_forum', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_forum')->constrained('forum')->onDelete('cascade');
+            $table->unsignedBigInteger('id_pembuat');
+            $table->string('tipe_pembuat');
+            $table->text('konten');
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('forum_comments');
-        Schema::dropIfExists('forums');
-        Schema::dropIfExists('submissions');
-        Schema::dropIfExists('assignments');
-        Schema::dropIfExists('materials');
-        Schema::dropIfExists('schedules');
-        Schema::dropIfExists('academic_maps');
-        Schema::dropIfExists('subjects');
-        Schema::dropIfExists('classes');
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('komentar_forum');
+        Schema::dropIfExists('forum');
+        Schema::dropIfExists('pengumpulan');
+        Schema::dropIfExists('tugas');
+        Schema::dropIfExists('materi');
+        Schema::dropIfExists('jadwal');
+        Schema::dropIfExists('pemetaan_akademik');
+        Schema::dropIfExists('mata_pelajaran');
+        Schema::dropIfExists('siswa');
+        Schema::dropIfExists('kelas');
+        Schema::dropIfExists('guru');
+        Schema::dropIfExists('administrator');
     }
 };
