@@ -131,16 +131,22 @@
         </div>
 
         {{-- User Info --}}
-        <div class="p-4 mx-3 mt-4 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-3">
-            <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0
+        {{-- User Info (Clickable for Profile) --}}
+        @php
+            $profileRoute = '#';
+            if($role == 'guru') $profileRoute = route('guru.profile');
+            elseif($role == 'siswa') $profileRoute = route('siswa.profile');
+        @endphp
+        <a href="{{ $profileRoute }}" class="p-4 mx-3 mt-4 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-3 hover:bg-white/10 transition-all group cursor-pointer">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 group-hover:scale-110 transition-transform
                 @if($role=='admin') bg-blue-600 @elseif($role=='guru') bg-emerald-600 @else bg-purple-600 @endif">
                 {{ strtoupper(substr($displayName ?? 'U', 0, 1)) }}
             </div>
             <div class="overflow-hidden">
-                <p class="text-sm font-semibold text-white truncate">{{ $displayName ?? 'User' }}</p>
-                <p class="text-[10px] text-slate-400 capitalize">{{ $role }}</p>
+                <p class="text-sm font-semibold text-white truncate group-hover:text-blue-300 transition-colors">{{ $displayName ?? 'User' }}</p>
+                <p class="text-[10px] text-slate-400 capitalize group-hover:text-slate-300 transition-colors">{{ $role }}</p>
             </div>
-        </div>
+        </a>
 
         {{-- Navigation --}}
         <nav class="flex-1 p-3 mt-4 space-y-1 overflow-y-auto">

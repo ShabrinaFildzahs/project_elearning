@@ -8,64 +8,13 @@
 
     @if(session('success'))
         <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-5 py-4 rounded-xl">✅ {{ session('success') }}</div>
-    @endif
-
-    {{-- Create New Discussion --}}
-    <div class="glass-card rounded-2xl overflow-hidden shadow-sm border border-slate-100 bg-white">
-        <button onclick="document.getElementById('new-forum-form').classList.toggle('hidden')"
-                class="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50/50 transition text-left">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">💬</div>
-                <span class="font-bold text-slate-700">Buat Diskusi Baru</span>
-            </div>
-            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-        </button>
-        <div id="new-forum-form" class="hidden border-t border-slate-100 p-6">
-            <form action="{{ route('siswa.forums.store') }}" method="POST" class="space-y-4">
-                @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Mata Pelajaran</label>
-                        <select name="id_pemetaan_akademik" required
-                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            <option value="">-- Pilih Mata Pelajaran --</option>
-                            @foreach($data_pemetaan as $map)
-                                <option value="{{ $map->id }}">
-                                    {{ $map->mataPelajaran->nama ?? '-' }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Judul Diskusi</label>
-                        <input type="text" name="judul" required placeholder="Tulis judul diskusi..."
-                               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Isi Pertanyaan / Diskusi</label>
-                    <textarea name="konten" required rows="4" placeholder="Tulis pertanyaan atau topik diskusi dengan jelas..."
-                              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"></textarea>
-                </div>
-                <div class="flex justify-end">
-                    <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-blue-100">
-                        Buat Diskusi
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Forum List --}}
+    @endif    {{-- Empty State --}}
     @if($data_forum->isEmpty())
         <div class="glass-card p-16 rounded-2xl text-center shadow-sm border border-slate-100 bg-white">
             <div class="text-5xl mb-4">💬</div>
             <h3 class="text-lg font-bold text-slate-700">Belum Ada Diskusi</h3>
-            <p class="text-slate-500 text-sm mt-2">Jadilah yang pertama membuka diskusi di kelasmu!</p>
-        </div>
+            <p class="text-slate-500 text-sm mt-2">Daftar diskusi akan muncul jika Guru telah memulai sebuah topik baru.</p>
+        </div>  </div>
     @else
         <div class="space-y-3">
             @foreach($data_forum as $forum)

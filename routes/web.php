@@ -8,7 +8,7 @@ use App\Http\Controllers\Siswa;
 
 Route::get('/', fn() => redirect()->route('login'));
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth:admin,guru,siswa'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ===== ADMIN =====
@@ -16,6 +16,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('users', Admin\UserController::class);
         Route::resource('classes', Admin\ClassController::class);
         Route::post('classes/store-map', [Admin\ClassController::class, 'storeMap'])->name('classes.storeMap');
+        Route::delete('classes/destroy-map/{id}', [Admin\ClassController::class, 'destroyMap'])->name('classes.destroyMap');
         Route::resource('schedules', Admin\ScheduleController::class);
     });
 
@@ -28,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('submissions/{submission}/grade', [Guru\AssignmentController::class, 'grade'])->name('submissions.grade');
         Route::resource('forums', Guru\ForumController::class);
         Route::post('forums/{forum}/comments', [Guru\ForumController::class, 'storeComment'])->name('forums.comments.store');
+        Route::get('profile', [Guru\ProfileController::class, 'index'])->name('profile');
     });
 
     // ===== SISWA =====
@@ -40,6 +42,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('assignments/{assignment}/submit', [Siswa\AssignmentController::class, 'submit'])->name('assignments.submit');
         Route::resource('forums', Siswa\ForumController::class);
         Route::post('forums/{forum}/comments', [Siswa\ForumController::class, 'storeComment'])->name('forums.comments.store');
+        Route::get('profile', [Siswa\ProfileController::class, 'index'])->name('profile');
     });
 });
 

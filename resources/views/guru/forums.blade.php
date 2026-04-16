@@ -16,12 +16,61 @@
 {{-- Header Bar --}}
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h2 class="text-lg font-bold text-slate-800">Diskusi Kelas Saya</h2>
-        <p class="text-sm text-slate-400 mt-0.5">Diskusi dari siswa pada kelas yang Anda ampu</p>
+        <h2 class="text-lg font-bold text-slate-800">Forum Diskusi</h2>
+        <p class="text-sm text-slate-400 mt-0.5">Mulai diskusi atau jawab pertanyaan siswa pada kelas yang Anda ampu</p>
     </div>
     <div class="flex items-center gap-2 text-sm text-slate-500 bg-white border border-slate-100 rounded-xl px-4 py-2 shadow-sm">
         <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
         <span class="font-semibold text-slate-700">{{ $data_forum->total() }}</span> diskusi aktif
+    </div>
+</div>
+
+{{-- Create New Discussion --}}
+<div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 group mb-6">
+    <button onclick="document.getElementById('new-forum-form').classList.toggle('hidden')"
+            class="w-full px-6 py-5 flex items-center justify-between hover:bg-emerald-50/30 transition text-left">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 transition group-hover:scale-110">💬</div>
+            <span class="font-bold text-slate-700">Mulai Diskusi Baru</span>
+        </div>
+        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+    </button>
+    <div id="new-forum-form" class="hidden border-t border-slate-100 p-6 bg-slate-50/30">
+        <form action="{{ route('guru.forums.store') }}" method="POST" class="space-y-4">
+            @csrf
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Pilih Kelas & Mata Pelajaran</label>
+                    <select name="id_pemetaan_akademik" required
+                            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition">
+                        <option value="">-- Pilih Tujuan Diskusi --</option>
+                        @foreach($data_pemetaan as $map)
+                            <option value="{{ $map->id }}">
+                                {{ $map->kelas->nama ?? '-' }} - {{ $map->mataPelajaran->nama ?? '-' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Judul Diskusi</label>
+                    <input type="text" name="judul" required placeholder="Contoh: Diskusi Bab 1: Pengenalan Laravel"
+                           class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Topik Pembahasan</label>
+                <textarea name="konten" required rows="4" placeholder="Tuliskan materi diskusi atau pertanyaan pemicu untuk siswa..."
+                          class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition resize-none"></textarea>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-8 py-2.5 rounded-xl transition shadow-lg shadow-emerald-100 active:scale-95">
+                    Mulai Diskusi
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

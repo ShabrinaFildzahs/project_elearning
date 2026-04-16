@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('guest')->group(function () {
+Route::middleware('guest:admin,guru,siswa')->group(function () {
     Route::get('login', function () {
         return view('auth.login');
     })->name('login');

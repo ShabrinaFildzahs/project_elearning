@@ -21,32 +21,9 @@ class ForumController extends Controller
             })
             ->withCount('komentar')->latest()->paginate(15);
 
-        $pemetaanAkademik = PemetaanAkademik::with(['mataPelajaran'])
-            ->where('id_kelas', $user->id_kelas)->get();
-
         return view('siswa.forums', [
-            'data_forum' => $forums, 
-            'data_pemetaan' => $pemetaanAkademik
+            'data_forum' => $forums
         ]);
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'id_pemetaan_akademik' => 'required|exists:pemetaan_akademik,id',
-            'judul'   => 'required|string|max:255',
-            'konten' => 'required|string',
-        ]);
-
-        Forum::create([
-            'id_pemetaan_akademik' => $request->id_pemetaan_akademik,
-            'id_pembuat' => Auth::guard('siswa')->id(),
-            'tipe_pembuat' => \App\Models\Siswa::class,
-            'judul'   => $request->judul,
-            'konten' => $request->konten,
-        ]);
-
-        return back()->with('success', 'Diskusi berhasil dibuat!');
     }
 
     public function show($id)
