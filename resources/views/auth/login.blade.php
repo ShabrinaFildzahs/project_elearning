@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Login - E-Learning SMK Taruna Bangsa')
+@section('title', 'Login - E-Learning SMK Mitra Bintaro')
 
 @section('content')
     <div class="w-full max-w-md">
@@ -13,8 +13,8 @@
                     <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm-4 9.4v3.1L12 18l4-2.5v-3.1L12 15l-4-2.6z" />
                 </svg>
             </div>
-            <h1 class="text-3xl font-extrabold text-white tracking-tight">SMK <span class="text-blue-400">Taruna
-                    Bangsa</span></h1>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">SMK <span class="text-blue-400">Mitra
+                    Bintaro</span></h1>
             <p class="text-slate-400 mt-2 text-sm">Portal E-Learning Terpadu</p>
 
             {{-- Role Badges --}}

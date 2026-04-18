@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') - SMK Taruna Bangsa</title>
+    <title>@yield('title', 'Dashboard') - SMK Mitra Bintaro</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -173,7 +173,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-bold text-white leading-none">SMK Taruna Bangsa</p>
+                    <p class="font-bold text-white leading-none">SMK Mitra Bintaro</p>
                     <p class="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest">E-Learning</p>
                 </div>
             </div>
