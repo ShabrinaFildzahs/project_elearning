@@ -17,6 +17,8 @@ Route::middleware(['auth:admin,guru,siswa'])->group(function () {
         Route::resource('classes', Admin\ClassController::class);
         Route::post('classes/store-map', [Admin\ClassController::class, 'storeMap'])->name('classes.storeMap');
         Route::delete('classes/destroy-map/{id}', [Admin\ClassController::class, 'destroyMap'])->name('classes.destroyMap');
+        Route::get('schedules/bulk', [Admin\ScheduleController::class, 'bulk'])->name('schedules.bulk.form');
+        Route::post('schedules/bulk', [Admin\ScheduleController::class, 'storeBulk'])->name('schedules.bulk');
         Route::resource('schedules', Admin\ScheduleController::class);
     });
 

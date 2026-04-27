@@ -135,6 +135,30 @@
             background: #cbd5e1;
             border-radius: 10px;
         }
+        /* ===== MOBILE RESPONSIVENESS ===== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                z-index: 50;
+                transition: left 0.3s ease;
+                box-shadow: 20px 0 30px rgba(0,0,0,0.1);
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.4);
+                backdrop-filter: blur(4px);
+                z-index: 40;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
     </style>
 </head>
 
@@ -160,8 +184,11 @@
         }
     @endphp
 
+    {{-- Overlay for mobile --}}
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     {{-- ===== SIDEBAR ===== --}}
-    <aside class="sidebar w-64 flex-shrink-0 flex flex-col h-full text-white">
+    <aside id="sidebar" class="sidebar w-64 flex-shrink-0 flex flex-col h-full text-white">
         {{-- Logo --}}
         <div class="p-6 border-b border-white/5">
             <div class="flex items-center space-x-3">
@@ -338,10 +365,16 @@
     </aside>
 
     {{-- ===== MAIN CONTENT ===== --}}
-    <div class="flex-1 flex flex-col h-full overflow-hidden">
+    <div class="flex-1 flex flex-col h-full overflow-hidden w-full">
         {{-- Topbar --}}
-        <header class="h-16 bg-white border-b border-slate-200/80 flex items-center justify-between px-8 shrink-0">
-            <h2 class="text-base font-bold text-slate-800">@yield('page_title', 'Dashboard')</h2>
+        <header class="h-16 bg-white border-b border-slate-200/80 flex items-center justify-between px-4 lg:px-8 shrink-0">
+            <div class="flex items-center gap-3">
+                {{-- Hamburger Mobile --}}
+                <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 transition border border-slate-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+                </button>
+                <h2 class="text-sm lg:text-base font-bold text-slate-800 truncate max-w-[150px] md:max-w-none">@yield('page_title', 'Dashboard')</h2>
+            </div>
             <div class="flex items-center space-x-3">
                 @if($role == 'siswa')
                     <div class="hidden md:flex flex-col items-end mr-2">
@@ -356,10 +389,10 @@
                     </div>
                 @endif
                 <div
-                    class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-full pl-3 pr-1 py-1">
-                    <span class="text-sm font-medium text-slate-700">{{ $displayName ?? 'User' }}</span>
+                    class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-full pl-3 pr-1 py-1 max-w-[120px] sm:max-w-[200px] md:max-w-none transition-all">
+                    <span class="text-xs sm:text-sm font-medium text-slate-700 truncate whitespace-nowrap">{{ $displayName ?? 'User' }}</span>
                     <div
-                        class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-white
+                        class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0
                         @if($role == 'admin') bg-blue-600 @elseif($role == 'guru') bg-emerald-600 @else bg-purple-600 @endif">
                         {{ strtoupper(substr($displayName ?? 'U', 0, 1)) }}
                     </div>
@@ -368,11 +401,26 @@
         </header>
 
         {{-- Page Content --}}
-        <main class="flex-1 overflow-y-auto p-8 bg-slate-50">
+        <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50">
             @yield('content')
         </main>
     </div>
 
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when sidebar open on mobile
+            if (sidebar.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+    </script>
 </body>
 
 </html>
