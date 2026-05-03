@@ -11,27 +11,27 @@
         <!-- Stats Summary -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="glass-card p-6 rounded-2xl">
-                <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Total Siswa</h4>
-                <p class="text-3xl font-extrabold text-slate-800">120</p>
-                <div class="mt-2 text-[10px] text-emerald-600 font-bold">↑ 5% dari bulan lalu</div>
+                <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Materi</h4>
+                <p class="text-3xl font-extrabold text-slate-800">{{ $stats['materi'] }}</p>
+                <div class="mt-2 text-[10px] text-emerald-600 font-bold">Materi terupload</div>
             </div>
             <div class="glass-card p-6 rounded-2xl">
-                <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Tugas Masuk</h4>
-                <p class="text-3xl font-extrabold text-slate-800">45</p>
-                <div class="mt-2 text-[10px] text-orange-500 font-bold">12 Belum Dinilai</div>
+                <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Tugas</h4>
+                <p class="text-3xl font-extrabold text-slate-800">{{ $stats['tugas'] }}</p>
+                <div class="mt-2 text-[10px] text-orange-500 font-bold">Tugas aktif</div>
             </div>
             <div class="glass-card p-6 rounded-2xl">
-                <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Materi Aktif</h4>
-                <p class="text-3xl font-extrabold text-slate-800">8</p>
-                <div class="mt-2 text-[10px] text-blue-600 font-bold">Di 3 Mata Pelajaran</div>
+                <h4 class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Sesi Hari Ini</h4>
+                <p class="text-3xl font-extrabold text-slate-800">{{ $jadwal_hari_ini->count() }}</p>
+                <div class="mt-2 text-[10px] text-blue-600 font-bold">Jadwal Mengajar</div>
             </div>
         </div>
 
         <!-- Schedule -->
         <div class="glass-card rounded-2xl overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
-                <h3 class="font-bold text-slate-800">Jadwal Mengajar Hari Ini</h3>
-                <button class="text-xs font-bold text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition border border-blue-100">Lihat Semua</button>
+                <h3 class="font-bold text-slate-800">Jadwal Mengajar Hari Ini ({{ $today }})</h3>
+                <a href="{{ route('guru.schedules') }}" class="text-xs font-bold text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition border border-blue-100">Lihat Semua</a>
             </div>
             <div class="p-0">
                 <table class="w-full text-left">
@@ -39,23 +39,29 @@
                         <tr class="bg-slate-50 text-slate-400 text-[10px] uppercase font-bold">
                             <th class="px-6 py-4">Waktu</th>
                             <th class="px-6 py-4">Kelas / Mapel</th>
-                            <th class="px-6 py-4">Ruang</th>
                             <th class="px-6 py-4">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 bg-white">
+                        @forelse($jadwal_hari_ini as $j)
                         <tr class="hover:bg-slate-50/50 transition">
-                            <td class="px-6 py-4 text-sm font-semibold text-slate-600">07:30 - 09:00</td>
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-slate-800">X RPL 1</span>
-                                <p class="text-xs text-slate-500">Pemrograman Dasar</p>
+                            <td class="px-6 py-4 text-sm font-semibold text-slate-600">
+                                {{ substr($j->jam_mulai,0,5) }} - {{ substr($j->jam_selesai,0,5) }}
                             </td>
-                            <td class="px-6 py-4 text-sm font-medium text-slate-600">Lab Komputer 2</td>
                             <td class="px-6 py-4">
-                                <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Upload Materi">📑</button>
-                                <button class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="Presensi">📝</button>
+                                <span class="font-bold text-slate-800">{{ $j->pemetaanAkademik->kelas->nama ?? '-' }}</span>
+                                <p class="text-xs text-slate-500">{{ $j->pemetaanAkademik->mataPelajaran->nama ?? '-' }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="{{ route('guru.materials.index') }}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition inline-block" title="Materi">📑</a>
+                                <a href="{{ route('guru.assignments.index') }}" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition inline-block" title="Tugas">📝</a>
                             </td>
                         </tr>
+                        @empty
+                        <tr>
+                            <td colspan="3" class="px-6 py-10 text-center text-slate-400 italic text-sm">Tidak ada jadwal mengajar untuk hari ini.</td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

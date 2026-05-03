@@ -16,6 +16,7 @@ class AssignmentController extends Controller
         $user = Auth::guard('siswa')->user();
 
         $tugas = Tugas::with(['pemetaanAkademik.mataPelajaran'])
+            ->where('tipe', 'tugas')
             ->whereHas('pemetaanAkademik', function($q) use ($user) {
                 $q->where('id_kelas', $user->id_kelas);
             })

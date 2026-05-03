@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', $tugas ? 'Edit Tugas' : 'Buat Tugas')
-@section('page_title', $tugas ? 'Edit Tugas / Kuis' : 'Buat Tugas / Kuis Baru')
+@section('page_title', $tugas ? 'Edit Tugas' : 'Buat Tugas Baru')
 
 @section('content')
 <div class="max-w-2xl">
@@ -28,14 +28,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Jenis</label>
-                    <select name="tipe" required class="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500">
-                        <option value="tugas" {{ old('tipe', $tugas?->tipe) == 'tugas' ? 'selected' : '' }}>Tugas (File Upload)</option>
-                        <option value="kuis" {{ old('tipe', $tugas?->tipe) == 'kuis' ? 'selected' : '' }}>Kuis (Link Eksternal / Ujian Online)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Judul Tugas / Kuis</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Judul Tugas</label>
                     <input type="text" name="judul" value="{{ old('judul', $tugas?->judul) }}" required
                         class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition text-sm">
                 </div>

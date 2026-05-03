@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Tugas & Kuis')
-@section('page_title', 'Tugas & Kuis')
+@section('title', 'Tugas Siswa')
+@section('page_title', 'Manajemen Tugas')
 
 @section('content')
 @if(session('success'))
@@ -20,13 +20,13 @@
     <div class="glass-card rounded-2xl p-5">
         <div class="flex items-start justify-between">
             <div class="flex items-start space-x-4">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {{ $tugas->tipe === 'kuis' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600' }}">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-blue-100 text-blue-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 </div>
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <h4 class="font-bold text-slate-800">{{ $tugas->judul }}</h4>
-                        <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase {{ $tugas->tipe === 'kuis' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700' }}">{{ $tugas->tipe }}</span>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700">Tugas</span>
                     </div>
                     <p class="text-xs text-slate-500">{{ $tugas->pemetaanAkademik->kelas->nama ?? '-' }} · {{ $tugas->pemetaanAkademik->mataPelajaran->nama ?? '-' }}</p>
                     <p class="text-xs text-slate-400 mt-1">Tenggat Waktu: <span class="{{ \Carbon\Carbon::parse($tugas->tenggat_waktu)->isPast() ? 'text-red-500' : 'text-slate-600' }} font-semibold">{{ \Carbon\Carbon::parse($tugas->tenggat_waktu)->format('d M Y, H:i') }}</span></p>

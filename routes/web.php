@@ -29,9 +29,11 @@ Route::middleware(['auth:admin,guru,siswa'])->group(function () {
         Route::resource('assignments', Guru\AssignmentController::class);
         Route::get('assignments/{assignment}/submissions', [Guru\AssignmentController::class, 'submissions'])->name('assignments.submissions');
         Route::post('submissions/{submission}/grade', [Guru\AssignmentController::class, 'grade'])->name('submissions.grade');
+        Route::resource('quizzes', Guru\QuizController::class);
         Route::resource('forums', Guru\ForumController::class);
         Route::post('forums/{forum}/comments', [Guru\ForumController::class, 'storeComment'])->name('forums.comments.store');
         Route::get('profile', [Guru\ProfileController::class, 'index'])->name('profile');
+        Route::put('profile', [Guru\ProfileController::class, 'update'])->name('profile.update');
     });
 
     // ===== SISWA =====
@@ -44,7 +46,10 @@ Route::middleware(['auth:admin,guru,siswa'])->group(function () {
         Route::post('assignments/{assignment}/submit', [Siswa\AssignmentController::class, 'submit'])->name('assignments.submit');
         Route::resource('forums', Siswa\ForumController::class);
         Route::post('forums/{forum}/comments', [Siswa\ForumController::class, 'storeComment'])->name('forums.comments.store');
+        Route::resource('quizzes', Siswa\QuizController::class);
+        Route::post('quizzes/{quiz}/submit', [Siswa\QuizController::class, 'submit'])->name('quizzes.submit');
         Route::get('profile', [Siswa\ProfileController::class, 'index'])->name('profile');
+        Route::put('profile', [Siswa\ProfileController::class, 'update'])->name('profile.update');
     });
 });
 

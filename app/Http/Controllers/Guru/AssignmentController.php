@@ -20,6 +20,7 @@ class AssignmentController extends Controller
     public function index()
     {
         $tugas = Tugas::with(['pemetaanAkademik.kelas', 'pemetaanAkademik.mataPelajaran'])
+            ->where('tipe', 'tugas')
             ->whereHas('pemetaanAkademik', fn($q) => $q->where('id_guru', Auth::guard('guru')->id()))
             ->withCount('pengumpulan')->latest()->paginate(12);
             
@@ -44,7 +45,6 @@ class AssignmentController extends Controller
             'judul'           => 'required|string|max:255',
             'deskripsi'     => 'required|string',
             'tenggat_waktu'        => 'required|date',
-            'tipe'            => 'required|in:tugas,kuis',
         ]);
 
         Tugas::create([
@@ -52,7 +52,7 @@ class AssignmentController extends Controller
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
             'tenggat_waktu' => $request->tenggat_waktu,
-            'tipe' => $request->tipe,
+            'tipe' => 'tugas',
         ]);
 
         return redirect()->route('guru.assignments.index')->with('success', 'Tugas berhasil dibuat!');
@@ -77,7 +77,6 @@ class AssignmentController extends Controller
             'judul'       => 'required|string|max:255',
             'deskripsi' => 'required|string',
             'tenggat_waktu'    => 'required|date',
-            'tipe'        => 'required|in:tugas,kuis',
         ]);
 
         $tugas->update([
@@ -85,7 +84,6 @@ class AssignmentController extends Controller
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
             'tenggat_waktu' => $request->tenggat_waktu,
-            'tipe' => $request->tipe,
         ]);
 
         return redirect()->route('guru.assignments.index')->with('success', 'Tugas berhasil diperbarui!');

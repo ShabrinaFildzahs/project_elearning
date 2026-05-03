@@ -13,19 +13,29 @@ class ScheduleController extends Controller
 {
     public function bulk(Request $request)
     {
+        $selectedKelasId = $request->get('kelas_id');
         $data_kelas    = Kelas::orderBy('nama')->get();
         $data_pemetaan = PemetaanAkademik::with(['kelas', 'mataPelajaran', 'guru'])->get();
 
+        $existingJadwal = [];
+        if ($selectedKelasId) {
+            $existingJadwal = Jadwal::whereHas('pemetaanAkademik', fn($q) => $q->where('id_kelas', $selectedKelasId))
+                ->orderBy('jam_mulai')
+                ->get()
+                ->groupBy('hari');
+        }
+
         return view('admin.schedules_bulk', [
-            'data_kelas'    => $data_kelas,
-            'data_pemetaan' => $data_pemetaan,
+            'data_kelas'      => $data_kelas,
+            'data_pemetaan'   => $data_pemetaan,
+            'selected_kelas'  => $selectedKelasId,
+            'existing_jadwal' => $existingJadwal,
         ]);
     }
 
     public function index(Request $request)
     {
         $hari_list = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        $data_kelas = Kelas::orderBy('nama')->get();
         $data_kelas = Kelas::orderBy('nama')->get();
 
         $selectedKelasId = $request->get('kelas_id');
@@ -47,7 +57,6 @@ class ScheduleController extends Controller
             'data_jadwal'    => $jadwal,
             'jadwal_by_hari' => $jadwalByHari,
             'hari_list'      => $hari_list,
-            'hari_list'      => $hari_list,
             'data_kelas'     => $data_kelas,
             'selected_kelas' => $selectedKelasId,
         ]);
@@ -67,6 +76,7 @@ class ScheduleController extends Controller
         $toInsert  = [];
         $errors    = [];
 
+        // 1. Kumpulkan data dan validasi format dasar
         foreach ($request->jadwal as $hari => $barisList) {
             if (!in_array($hari, $hariValid) || !is_array($barisList)) continue;
 
@@ -75,10 +85,8 @@ class ScheduleController extends Controller
                 $jamMulai   = $baris['jam_mulai'] ?? null;
                 $jamSelesai = $baris['jam_selesai'] ?? null;
 
-                // Skip baris kosong
                 if (empty($pemetaanId) || empty($jamMulai) || empty($jamSelesai)) continue;
 
-                // Validasi jam
                 if ($jamSelesai <= $jamMulai) {
                     $errors[] = "Baris {$hari} ke-" . ($idx + 1) . ": Jam selesai harus lebih dari jam mulai.";
                     continue;
@@ -90,22 +98,11 @@ class ScheduleController extends Controller
                     continue;
                 }
 
-                // Cek bentrok kelas (terhadap jadwal yang sudah ada di DB)
-                $bentrokKelas = Jadwal::whereHas('pemetaanAkademik', fn($q) => $q->where('id_kelas', $pemetaan->id_kelas))
-                    ->where('hari', $hari)
-                    ->where(fn($q) => $q->where('jam_mulai', '<', $jamSelesai)->where('jam_selesai', '>', $jamMulai))
-                    ->with('pemetaanAkademik.mataPelajaran')
-                    ->first();
-
-                if ($bentrokKelas) {
-                    $nm = $bentrokKelas->pemetaanAkademik->mataPelajaran->nama ?? '-';
-                    $errors[] = "⚠️ {$hari} baris ke-" . ($idx + 1) . ": Bentrok jadwal kelas dengan \"{$nm}\" ("
-                        . substr($bentrokKelas->jam_mulai, 0, 5) . "–" . substr($bentrokKelas->jam_selesai, 0, 5) . ").";
-                    continue;
-                }
-
-                // Cek bentrok guru (terhadap jadwal yang sudah ada di DB)
-                $bentrokGuru = Jadwal::whereHas('pemetaanAkademik', fn($q) => $q->where('id_guru', $pemetaan->id_guru))
+                // Cek bentrok guru (terhadap jadwal di DB, tapi abaikan jadwal kelas ini sendiri karena akan di-sync)
+                $bentrokGuru = Jadwal::whereHas('pemetaanAkademik', function($q) use ($pemetaan, $request) {
+                        $q->where('id_guru', $pemetaan->id_guru)
+                          ->where('id_kelas', '!=', $request->id_kelas); // Abaikan kelas ini
+                    })
                     ->where('hari', $hari)
                     ->where(fn($q) => $q->where('jam_mulai', '<', $jamSelesai)->where('jam_selesai', '>', $jamMulai))
                     ->with(['pemetaanAkademik.mataPelajaran', 'pemetaanAkademik.kelas'])
@@ -123,17 +120,20 @@ class ScheduleController extends Controller
                 // Cek bentrok antar baris yang baru diinput (dalam sesi submit ini)
                 foreach ($toInsert as $existing) {
                     if ($existing['hari'] !== $hari) continue;
-                    $sameKelas = ($existing['id_kelas'] == $pemetaan->id_kelas);
-                    $sameGuru  = ($existing['id_guru']  == $pemetaan->id_guru);
                     $overlap   = ($jamMulai < $existing['jam_selesai'] && $jamSelesai > $existing['jam_mulai']);
-                    if ($overlap && $sameKelas) {
-                        $errors[] = "⚠️ {$hari} baris ke-" . ($idx + 1) . ": Bentrok waktu dengan mapel lain di kelas yang sama pada form ini.";
-                        continue 2;
-                    }
-                    if ($overlap && $sameGuru) {
-                        $guru = $pemetaan->guru->nama ?? '-';
-                        $errors[] = "⚠️ {$hari} baris ke-" . ($idx + 1) . ": Guru \"{$guru}\" dijadwalkan dua kali di waktu yang sama.";
-                        continue 2;
+                    
+                    if ($overlap) {
+                        // Bentrok di kelas yang sama
+                        if ($existing['id_kelas'] == $pemetaan->id_kelas) {
+                            $errors[] = "⚠️ {$hari} baris ke-" . ($idx + 1) . ": Bentrok waktu dengan mapel lain pada form ini.";
+                            continue 2;
+                        }
+                        // Guru yang sama dijadwalkan di dua tempat berbeda di form ini
+                        if ($existing['id_guru'] == $pemetaan->id_guru) {
+                            $guru = $pemetaan->guru->nama ?? '-';
+                            $errors[] = "⚠️ {$hari} baris ke-" . ($idx + 1) . ": Guru \"{$guru}\" dijadwalkan dua kali di waktu yang sama pada form ini.";
+                            continue 2;
+                        }
                     }
                 }
 
@@ -155,24 +155,30 @@ class ScheduleController extends Controller
         }
 
         if (empty($toInsert)) {
-            return back()->withErrors(['bulk' => 'Tidak ada jadwal yang valid untuk disimpan. Pastikan semua baris sudah diisi.'])->withInput();
+            return back()->withErrors(['bulk' => 'Tidak ada jadwal yang valid untuk disimpan.'])->withInput();
         }
 
-        // Hapus kolom tambahan sebelum insert
-        $insertData = array_map(fn($r) => [
-            'id_pemetaan_akademik' => $r['id_pemetaan_akademik'],
-            'hari'                 => $r['hari'],
-            'jam_mulai'            => $r['jam_mulai'],
-            'jam_selesai'          => $r['jam_selesai'],
-            'created_at'           => $r['created_at'],
-            'updated_at'           => $r['updated_at'],
-        ], $toInsert);
+        // 2. Eksekusi Sync dalam Transaction
+        \Illuminate\Support\Facades\DB::transaction(function() use ($request, $toInsert) {
+            // Hapus jadwal lama khusus kelas ini
+            Jadwal::whereHas('pemetaanAkademik', fn($q) => $q->where('id_kelas', $request->id_kelas))->delete();
 
-        Jadwal::insert($insertData);
+            // Insert jadwal baru
+            $insertData = array_map(fn($r) => [
+                'id_pemetaan_akademik' => $r['id_pemetaan_akademik'],
+                'hari'                 => $r['hari'],
+                'jam_mulai'            => $r['jam_mulai'],
+                'jam_selesai'          => $r['jam_selesai'],
+                'created_at'           => $r['created_at'],
+                'updated_at'           => $r['updated_at'],
+            ], $toInsert);
 
-        $total = count($insertData);
+            Jadwal::insert($insertData);
+        });
+
+        $total = count($toInsert);
         return redirect()->route('admin.schedules.index', ['kelas_id' => $request->id_kelas])
-            ->with('success', "✅ {$total} jadwal berhasil disimpan sekaligus!");
+            ->with('success', "✅ {$total} jadwal berhasil disinkronkan untuk kelas ini!");
     }
 
 

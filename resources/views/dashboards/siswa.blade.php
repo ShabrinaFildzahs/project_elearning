@@ -34,9 +34,9 @@
         <div class="glass-card rounded-2xl overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center">
                 <h3 class="font-bold text-slate-800">Jadwal Pelajaran Hari Ini</h3>
-                <span class="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-600 rounded-full">Kamis, 10 April</span>
+                <span class="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-600 rounded-full">{{ $today }}, {{ now()->translatedFormat('d F') }}</span>
             </div>
-            <div class="p-0">
+            <div class="p-0 overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="bg-slate-50/50 text-slate-500 text-xs uppercase tracking-wider">
@@ -47,28 +47,37 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
+                        @forelse($jadwal_hari_ini as $j)
+                        @php
+                            $start = \Carbon\Carbon::parse(now()->format('Y-m-d') . ' ' . $j->jam_mulai);
+                            $end   = \Carbon\Carbon::parse(now()->format('Y-m-d') . ' ' . $j->jam_selesai);
+                            $status = 'Mendatang';
+                            $color = 'slate';
+                            if (now()->between($start, $end)) {
+                                $status = 'Berlangsung';
+                                $color = 'emerald';
+                            } elseif (now()->gt($end)) {
+                                $status = 'Selesai';
+                                $color = 'blue';
+                            }
+                        @endphp
                         <tr class="hover:bg-slate-50/50 transition">
-                            <td class="px-6 py-4 text-sm font-medium text-slate-600 italic">07:30 - 09:00</td>
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-slate-800">Pemrograman Web</span>
-                                <p class="text-xs text-slate-500">Lab Komputer 1</p>
+                            <td class="px-6 py-4 text-sm font-medium text-slate-600 italic">
+                                {{ substr($j->jam_mulai,0,5) }} - {{ substr($j->jam_selesai,0,5) }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-600">Bpk. Budi Santoso</td>
                             <td class="px-6 py-4">
-                                <span class="px-2 py-1 bg-emerald-100 text-emerald-600 text-[10px] font-bold rounded-md uppercase">Berlangsung</span>
+                                <span class="font-bold text-slate-800">{{ $j->pemetaanAkademik->mataPelajaran->nama ?? '-' }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-600">{{ $j->pemetaanAkademik->guru->nama ?? '-' }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 bg-{{ $color }}-100 text-{{ $color }}-600 text-[10px] font-bold rounded-md uppercase">{{ $status }}</span>
                             </td>
                         </tr>
-                        <tr class="hover:bg-slate-50/50 transition">
-                            <td class="px-6 py-4 text-sm font-medium text-slate-600 italic">09:15 - 10:45</td>
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-slate-800">Basis Data</span>
-                                <p class="text-xs text-slate-500">Ruang X-RPL-1</p>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-slate-600">Ibu Siti Aminah</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-md uppercase">Mendatang</span>
-                            </td>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-10 text-center text-slate-400 italic text-sm">Tidak ada jadwal pelajaran untuk hari ini.</td>
                         </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
